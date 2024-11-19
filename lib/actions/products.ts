@@ -43,7 +43,7 @@ async function UploadImage(file: File) {
     return { error: error.message };
   }
 
-  const { data } = supabase.storage.from("images").getPublicUrl(fileName);
+  const { data } = supabase.storage.from("products").getPublicUrl(fileName);
 
   if (!data) {
     return { error: "Failed to upload image." };
@@ -57,7 +57,7 @@ async function DeleteImage(imageUrl: string) {
   const fileName = imageUrl.split("/").pop();
   if (!fileName) return { error: "Invalid image URL" };
 
-  const { error } = await supabase.storage.from("images").remove([fileName]);
+  const { error } = await supabase.storage.from("products").remove([fileName]);
 
   if (error) {
     return { error: error.message };
