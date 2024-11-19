@@ -224,3 +224,34 @@ export async function GetAllProducts() {
     return [];
   }
 }
+
+export async function UpdateStock(formData: FormData) {
+  try {
+    const supabase = createClient();
+
+    const { data: product_stock, error: fetchError } = await supabase
+      .from("products")
+      .select("stock")
+      .eq("id", formData.get("id"))
+      .single();
+
+    if (fetchError) {
+      return { error: fetchError.message };
+    }
+
+    const { error } = await supabase
+      .from("products")
+      .update({
+        stock: Number(product_stock.stock) + Number(formData.get("add_stock")),
+      })
+      .eq("id", formData.get("id"));
+
+    if (error) {
+      return { error: error.message };
+    }
+    revalidatePath("/products");
+    return { error: "" };
+  } catch (error) {
+    return { error: "Error adding stock." };
+  }
+}

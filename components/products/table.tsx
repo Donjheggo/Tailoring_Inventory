@@ -27,6 +27,7 @@ import UpdateButton from "./update-button";
 import DeleteButton from "./delete-button";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "../ui/button";
+import AddStockButton from "./update-stock-button";
 import Image from "next/image";
 
 export default async function ProductsTable({
@@ -58,8 +59,11 @@ export default async function ProductsTable({
                 <span className="sr-only">Image</span>
               </TableHead>
               <TableHead className="table-cell">Name</TableHead>
-              <TableHead className="table-cell">Stock</TableHead>
+              <TableHead className="table-cell text-center">Stock</TableHead>
               <TableHead className="table-cell">Price</TableHead>
+              <TableHead>
+                <span className="sr-only">Updates</span>
+              </TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>
@@ -80,8 +84,20 @@ export default async function ProductsTable({
                 <TableCell>
                   <p className="font-semibold text-lg">{item.name}</p>
                 </TableCell>
-                <TableCell className="font-normal">{item.stock}</TableCell>
+                <TableCell
+                  className={`font-normal text-center ${
+                    item.stock < 11 && "flex flex-col"
+                  }`}
+                >
+                  <span className="">{item.stock}</span>
+                  {item.stock < 11 && (
+                    <span className="text-red-800">Stock is low</span>
+                  )}
+                </TableCell>
                 <TableCell className="font-normal">₱{item.price}</TableCell>
+                <TableCell className="font-normal">
+                  <AddStockButton item={item} />
+                </TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

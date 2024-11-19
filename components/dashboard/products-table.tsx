@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -16,6 +11,7 @@ import { GetProducts } from "@/lib/actions/products";
 import { MoveUpRight } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import Image from "next/image";
 
 export default async function ProductsTable({
   searchQuery,
@@ -47,6 +43,9 @@ export default async function ProductsTable({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="hidden w-[100px] sm:table-cell">
+                <span className="sr-only">Image</span>
+              </TableHead>
               <TableHead className="table-cell">Name</TableHead>
               <TableHead className="table-cell">Stock</TableHead>
               <TableHead className="table-cell">Price</TableHead>
@@ -58,6 +57,15 @@ export default async function ProductsTable({
           <TableBody>
             {products?.map((item, index) => (
               <TableRow key={index}>
+                <TableCell className="hidden sm:table-cell">
+                  <Image
+                    alt="Product image"
+                    className="aspect-square rounded-md object-cover"
+                    height="64"
+                    src={item.image}
+                    width="64"
+                  />
+                </TableCell>
                 <TableCell>
                   <p className="font-semibold text-lg">{item.name}</p>
                 </TableCell>
