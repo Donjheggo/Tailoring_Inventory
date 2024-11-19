@@ -32,12 +32,56 @@ export async function GetProducts(
   }
 }
 
+async function UploadImage(file: File) {
+  const supabase = createClient();
+  const fileName = `${Date.now()}_${file.name}`;
+  const { error } = await supabase.storage
+    .from("products")
+    .upload(fileName, file);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  const { data } = supabase.storage.from("images").getPublicUrl(fileName);
+
+  if (!data) {
+    return { error: "Failed to upload image." };
+  }
+
+  return { imageUrl: data.publicUrl };
+}
+
+async function DeleteImage(imageUrl: string) {
+  const supabase = createClient();
+  const fileName = imageUrl.split("/").pop();
+  if (!fileName) return { error: "Invalid image URL" };
+
+  const { error } = await supabase.storage.from("images").remove([fileName]);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { error: "" };
+}
+
 export async function CreateProduct(formData: FormData) {
   try {
     const supabase = createClient();
+
+    const image = formData.get("image") as File;
+
+    const { imageUrl, error: uploadError } = await UploadImage(image);
+
+    if (uploadError) {
+      return { error: uploadError };
+    }
+
     const { error } = await supabase
       .from("products")
       .insert({
+        image: imageUrl,
         name: formData.get("name"),
         stock: formData.get("stock"),
         price: formData.get("price"),
@@ -75,9 +119,30 @@ export async function GetProductById(id: string) {
 export async function UpdateProduct(formData: FormData) {
   try {
     const supabase = createClient();
+
+    let imageUrl = formData.get("currentImageUrl") as string;
+    const image = formData.get("image") as File | null;
+
+    if (image && image.size > 0) {
+      if (imageUrl) {
+        const { error } = await DeleteImage(imageUrl);
+        if (error) {
+          console.error("Failed to delete old image: ", error);
+        }
+      }
+      const result = await UploadImage(image);
+
+      if ("error" in result) {
+        return { error: result.error };
+      }
+
+      imageUrl = result.imageUrl;
+    }
+
     const { error } = await supabase
       .from("products")
       .update({
+        image: imageUrl,
         name: formData.get("name"),
         stock: formData.get("stock"),
         price: formData.get("price"),
@@ -98,11 +163,29 @@ export async function UpdateProduct(formData: FormData) {
 export async function DeleteProduct(id: string) {
   try {
     const supabase = createClient();
+    const { data: product, error: fetchError } = await supabase
+      .from("products")
+      .select("image")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) {
+      return { error: fetchError.message };
+    }
+
+    if (product && product.image) {
+      const { error } = await DeleteImage(product.image);
+      if (error) {
+        console.error("Failed to delete product image: ", error);
+      }
+    }
+
     const { error } = await supabase.from("products").delete().eq("id", id);
 
     if (error) {
       return { error: error };
     }
+
     revalidatePath("/products");
     return { error: "" };
   } catch (error) {

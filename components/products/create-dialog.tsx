@@ -24,6 +24,7 @@ export default function CreateDialog() {
 
     if (
       !formData.get("name") ||
+      !formData.get("image") ||
       !formData.get("stock") ||
       !formData.get("price")
     ) {
@@ -57,6 +58,20 @@ export default function CreateDialog() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="image" className="text-right">
+                Image
+              </Label>
+              <Input
+                name="image"
+                id="image"
+                type="file"
+                placeholder=""
+                accept="image/*"
+                className="col-span-3"
+                required
+              />
+            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
                 Product name
